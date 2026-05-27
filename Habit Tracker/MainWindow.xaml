@@ -1,0 +1,209 @@
+﻿<Window x:Class="HabitTracker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HabitTracker"
+        Height="700"
+        Width="400"
+        Background="#1E1F26"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid>
+        <!-- Заголовок -->
+        <TextBlock Text="Мои привычки"
+                   Foreground="White"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Margin="20,20,0,0"
+                   VerticalAlignment="Top"
+                   HorizontalAlignment="Left"/>
+
+        <!-- Список привычек -->
+        <ListView x:Name="HabitsList"
+                  ItemsSource="{Binding HabitsView}"
+                  Background="Transparent"
+                  BorderBrush="Transparent"
+                  Margin="12,64,12,80"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+            <!-- Контейнеры тянутся по ширине, без hover/selection подсветки -->
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Setter Property="Margin" Value="0,0,0,10"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <!-- Шаблон одной привычки -->
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <!-- Общая горизонтальная линия: кружок слева, карточка справа -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <!-- кружок -->
+                            <ColumnDefinition Width="8"/>
+                            <!-- зазор -->
+                            <ColumnDefinition Width="*"/>
+                            <!-- карточка -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- КРУЖОК ВНЕ КАРТОЧКИ -->
+                        <Grid Grid.Column="0"
+                              Width="26"
+                              Height="26"
+                              VerticalAlignment="Center">
+
+                            <!-- внешний белый круг -->
+                            <Border Width="26"
+                                    Height="26"
+                                    CornerRadius="13"
+                                    Background="White"/>
+
+                            <!-- внутренний круг:
+                                 если НЕ выполнено -> цвет привычки,
+                                 если выполнено -> белый -->
+                            <Border Width="18"
+                                    Height="18"
+                                    CornerRadius="9"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCompletedToday}" Value="True">
+                                                <Setter Property="Background" Value="White"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsCompletedToday}" Value="False">
+                                                <Setter Property="Background" Value="{Binding ColorBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+
+                            <!-- Невидимая кнопка без hover / pressed -->
+                            <Button Click="CompleteCircle_Click"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Cursor="Hand"
+                                    Padding="0">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="Transparent">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+
+                        <!-- КАРТОЧКА ПРИВЫЧКИ СПРАВА -->
+                        <Border Grid.Column="2"
+                                CornerRadius="16"
+                                Height="70"
+                                Padding="14,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <!-- по умолчанию цвет привычки -->
+                                    <Setter Property="Background" Value="{Binding ColorBrush}"/>
+                                    <Style.Triggers>
+                                        <!-- если выполнено, фон = #2F3846 -->
+                                        <DataTrigger Binding="{Binding IsCompletedToday}" Value="True">
+                                            <Setter Property="Background" Value="#2F3846"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <!-- иконка -->
+                                    <ColumnDefinition Width="*"/>
+                                    <!-- текст -->
+                                </Grid.ColumnDefinitions>
+
+                                <!-- ИКОНКА: увеличенная, тот же цвет, белый символ -->
+                                <Border Grid.Column="0"
+                                        Width="46"
+                                        Height="46"
+                                        CornerRadius="14"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,14,0"
+                                        Background="{Binding ColorBrush}">
+                                    <TextBlock Text="{Binding IconKey}"
+                                               FontSize="26"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="White"/>
+                                </Border>
+
+                                <!-- Название и тип (потом можно заменить на режим повтора) -->
+                                <StackPanel Grid.Column="1"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="White"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Type}"
+                                               Foreground="#E0E0E0"
+                                               FontSize="12"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Кнопка + -->
+        <Button Command="{Binding CreateCommand}"
+                Width="60"
+                Height="60"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,16,16"
+                BorderBrush="Transparent"
+                Background="#2196F3"
+                Cursor="Hand">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="18"
+                            Width="60"
+                            Height="60">
+                        <TextBlock Text="+"
+                                   FontSize="32"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="0,-2,0,0"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</Window>
